@@ -2,7 +2,7 @@
 
 const socket = new WebSocket('ws://localhost:8080');
 const MAX_BLOB_RADIUS = 100;
-const MOVE_SPEED = 0.5;
+const BASE_MOVE_SPEED = 1;
 const PELLET_COUNT = 20;
 const PELLET_RESPAWN_TIME = 5000; // 5 seconds
 const PELLET_GROWTH_AMOUNT = 3;
@@ -60,6 +60,7 @@ let gameScene;
 let factions = {};
 let factionRequests = {};
 let pellets = [];
+let userFactions = {}; // New object to track user's faction
 
 function preload() {
     // No preload needed for now
@@ -93,6 +94,14 @@ function spawnPellet() {
 function joinFaction(factionName, username) {
     factionName = sanitizeFactionName(factionName);
 
+    // Remove user from their current faction if they're in one
+    if (userFactions[username]) {
+        let oldFaction = factions[userFactions[username]];
+        if (oldFaction) {
+            oldFaction.members = oldFaction.members.filter(member => member !== username);
+        }
+    }
+
     if (!factionRequests[factionName]) {
         factionRequests[factionName] = new Set();
     }
@@ -105,6 +114,10 @@ function joinFaction(factionName, username) {
     } else if (factions[factionName]) {
         addMemberToFaction(factionName, username);
     }
+
+    // Update the user's faction
+    userFactions[username] = factionName;
+    updateFactionStats();
 }
 
 function sanitizeFactionName(name) {
@@ -211,6 +224,17 @@ function updateFactionStats() {
     </table>
     `;
 
+    // Add faction member list
+    for (let key in factions) {
+        let faction = factions[key];
+        tableHTML += `
+        <h3>${key} Members:</h3>
+        <ul>
+            ${faction.members.map(member => `<li>${member}</li>`).join('')}
+        </ul>
+        `;
+    }
+
     factionStatsDiv.innerHTML = tableHTML;
 }
 
@@ -218,24 +242,30 @@ function moveBlob(username, direction) {
     for (let key in factions) {
         let faction = factions[key];
         if (faction.members.includes(username)) {
+            let moveSpeed = calculateMoveSpeed(faction.blob.radius);
             switch (direction) {
                 case 'up':
-                    faction.velocityY -= MOVE_SPEED;
+                    faction.velocityY -= moveSpeed;
                     break;
                 case 'down':
-                    faction.velocityY += MOVE_SPEED;
+                    faction.velocityY += moveSpeed;
                     break;
                 case 'left':
-                    faction.velocityX -= MOVE_SPEED;
+                    faction.velocityX -= moveSpeed;
                     break;
                 case 'right':
-                    faction.velocityX += MOVE_SPEED;
+                    faction.velocityX += moveSpeed;
                     break;
             }
             console.log(`${username} moved the ${key} blob ${direction}!`);
             break;
         }
     }
+}
+
+function calculateMoveSpeed(radius) {
+    // Smaller blobs move faster, bigger blobs move slower
+    return BASE_MOVE_SPEED * (1 - (radius / MAX_BLOB_RADIUS) * 0.8);
 }
 
 function applyFriction() {
@@ -320,7 +350,7 @@ function checkPelletCollisions() {
             let pellet = pellets[i];
             let distance = Phaser.Math.Distance.Between(blob.x, blob.y, pellet.x, pellet.y);
 
-            if (distance < blob.radius) {
+            if (distance < blob.radius + 5) { // Add pellet radius (5) to the collision check
                 pellet.destroy();
                 pellets.splice(i, 1);
                 growFactionBlob(faction, PELLET_GROWTH_AMOUNT);
@@ -337,6 +367,12 @@ function destroyFaction(factionName) {
     if (faction) {
         if (faction.blob) faction.blob.destroy();
         if (faction.nameText) faction.nameText.destroy();
+        
+        // Remove users from the destroyed faction
+        faction.members.forEach(username => {
+            delete userFactions[username];
+        });
+        
         delete factions[factionName];
         console.log(`Faction ${factionName} has been destroyed!`);
         updateFactionStats();
