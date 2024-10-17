@@ -1,22 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Twitch Chat Game</title>
-  <style>
-    #chat {
-      width: 300px;
-      height: 400px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      overflow-y: scroll;
-      font-family: Arial, sans-serif;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Twitch Chat Game</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="chat"></div>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
-  <script src="main.js"></script>
+    <div id="game-container"></div>
+    <div id="chat-container">
+        <div id="chat"></div>
+    </div>
+    <div id="stats-container">
+        <h3>Faction Stats</h3>
+        <div id="faction-stats"></div> <!-- Placeholder for faction stats table -->
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>

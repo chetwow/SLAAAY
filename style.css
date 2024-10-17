@@ -1,0 +1,76 @@
+/* style.css */
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #001D3D;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+
+#game-container {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#chat-container {
+    width: 100%;
+    background-color: #001D3D;
+    padding: 10px;
+    box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.3);
+}
+
+#chat {
+    width: 100%;
+    height: 150px;
+    border: 2px solid #003566;
+    border-radius: 10px;
+    padding: 15px;
+    background-color: #001D3D;
+    color: #FFD60A;
+    overflow-y: scroll;
+    font-size: 1rem;
+}
+
+#chat p {
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: #003566;
+    color: #FFC300;
+}
+
+#stats-container {
+    width: 100%;
+    background-color: #003566;
+    color: #ffffff;
+    padding: 10px;
+    box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.3);
+}
+
+#faction-stats {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#faction-stats table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 1rem;
+}
+
+#faction-stats table, #faction-stats th, #faction-stats td {
+    border: 1px solid #ffffff;
+}
+
+#faction-stats th, #faction-stats td {
+    padding: 8px;
+    text-align: center;
+}
