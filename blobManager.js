@@ -5,6 +5,7 @@ import { FactionManager } from './factionManager.js';
 export const BlobManager = {
     recentDirections: {},
     boostTimers: {},
+    flameParticles: {},
 
     growFactionBlob: function(faction, amount) {
         let blob = faction.blob;
@@ -93,6 +94,7 @@ export const BlobManager = {
             faction.blob.x += faction.velocityX;
             faction.blob.y += faction.velocityY;
             this.updateFactionText(faction);
+            this.updateFlameEffect(faction);
         }
     },
 
@@ -212,16 +214,13 @@ export const BlobManager = {
     },
 
     applySpeedBoost: function(faction, direction) {
-        const originalColor = faction.blob.fillColor;
-        faction.blob.setFillStyle(0xffff00); // Set to yellow
-        
         if (this.boostTimers[faction.name]) {
             clearTimeout(this.boostTimers[faction.name]);
         }
     
         this.boostTimers[faction.name] = setTimeout(() => {
-            faction.blob.setFillStyle(originalColor); // Reset to original color
             this.recentDirections[faction.name] = [];
+            this.stopFlameEffect(faction);
         }, GAME_CONSTANTS.SPEED_BOOST_DURATION);
     
         // Apply an extra boost in the consensus direction
@@ -239,6 +238,40 @@ export const BlobManager = {
             case 'right':
                 faction.velocityX += boostSpeed;
                 break;
+        }
+
+        this.startFlameEffect(faction);
+    },
+
+    startFlameEffect: function(faction) {
+        if (!this.flameParticles[faction.name]) {
+            this.flameParticles[faction.name] = GAME_STATE.gameScene.add.particles('flame');
+        }
+
+        const emitter = this.flameParticles[faction.name].createEmitter({
+            speed: { min: 50, max: 100 },
+            scale: { start: 0.5, end: 0 },
+            blendMode: 'ADD',
+            lifespan: 300
+        });
+
+        emitter.startFollow(faction.blob);
+    },
+
+    stopFlameEffect: function(faction) {
+        if (this.flameParticles[faction.name]) {
+            this.flameParticles[faction.name].removeEmitter(this.flameParticles[faction.name].emitters.first);
+            this.flameParticles[faction.name].destroy();
+            delete this.flameParticles[faction.name];
+        }
+    },
+
+    updateFlameEffect: function(faction) {
+        if (this.flameParticles[faction.name] && this.flameParticles[faction.name].emitters.first) {
+            const blob = faction.blob;
+            const angle = Math.atan2(faction.velocityY, faction.velocityX) + Math.PI;
+            
+            this.flameParticles[faction.name].emitters.first.setAngle(Phaser.Math.RadToDeg(angle));
         }
     }
 };

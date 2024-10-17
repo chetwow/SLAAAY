@@ -38,7 +38,6 @@ export const FactionManager = {
         let color = Phaser.Display.Color.RandomRGB();
         let x = Phaser.Math.Between(100, GAME_STATE.gameScene.scale.width - 100);
         let y = Phaser.Math.Between(100, GAME_STATE.gameScene.scale.height - 100);
-
         let newBlob = GAME_STATE.gameScene.add.circle(x, y, 50, color.color);
         newBlob.setInteractive();
         newBlob.radius = 50;
