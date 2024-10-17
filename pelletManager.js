@@ -10,7 +10,7 @@ export const PelletManager = {
     },
     spawnPellet: function() {
         let x = Phaser.Math.Between(10, GAME_STATE.gameScene.scale.width - 10);
-        let y = Phaser.Math.Between(10, GAME_STATE.gameScene.sys.game.config.height - 10);
+        let y = Phaser.Math.Between(10, GAME_STATE.gameScene.scale.height - 10);
         let pellet = GAME_STATE.gameScene.add.circle(x, y, 5, 0xFF69B4);
         GAME_STATE.pellets.push(pellet);
     },
@@ -29,9 +29,18 @@ export const PelletManager = {
                     BlobManager.growFactionBlob(faction, GAME_CONSTANTS.PELLET_GROWTH_AMOUNT);
                     console.log(`${key} faction consumed a pellet!`);
 
-                    setTimeout(this.spawnPellet.bind(this), GAME_CONSTANTS.PELLET_RESPAWN_TIME);
+                    this.scheduleNextPelletSpawn();
                 }
             }
         }
+    },
+    scheduleNextPelletSpawn: function() {
+        setTimeout(() => {
+            if (Math.random() < GAME_CONSTANTS.PELLET_RESPAWN_CHANCE) {
+                this.spawnPellet();
+            } else {
+                this.scheduleNextPelletSpawn();
+            }
+        }, GAME_CONSTANTS.PELLET_RESPAWN_TIME);
     }
 };

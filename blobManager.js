@@ -3,6 +3,9 @@ import { GAME_CONSTANTS } from './constants.js';
 import { FactionManager } from './factionManager.js';
 
 export const BlobManager = {
+    recentDirections: {},
+    boostTimers: {},
+
     growFactionBlob: function(faction, amount) {
         let blob = faction.blob;
         let currentRadius = blob.radius;
@@ -16,6 +19,7 @@ export const BlobManager = {
             duration: GAME_CONSTANTS.ANIMATION_DURATION,
             ease: 'Sine.easeInOut',
             onUpdate: () => {
+                blob.setRadius(blob.radius); // Update the physics body
                 this.updateFactionText(faction);
             },
             onComplete: () => {
@@ -23,6 +27,7 @@ export const BlobManager = {
             }
         });
     },
+
     shrinkFactionBlob: function(faction, amount) {
         let blob = faction.blob;
         let currentRadius = blob.radius;
@@ -35,6 +40,7 @@ export const BlobManager = {
             duration: GAME_CONSTANTS.ANIMATION_DURATION,
             ease: 'Sine.easeInOut',
             onUpdate: () => {
+                blob.setRadius(blob.radius); // Update the physics body
                 this.updateFactionText(faction);
             },
             onComplete: () => {
@@ -42,11 +48,19 @@ export const BlobManager = {
             }
         });
     },
+
     moveBlob: function(username, direction) {
         for (let key in GAME_STATE.factions) {
             let faction = GAME_STATE.factions[key];
             if (faction.members.includes(username)) {
+                this.addDirection(key, direction);
                 let moveSpeed = this.calculateMoveSpeed(faction.blob.radius);
+                
+                if (this.checkConsensus(key)) {
+                    moveSpeed *= GAME_CONSTANTS.SPEED_BOOST_FACTOR;
+                    this.applySpeedBoost(faction, direction);
+                }
+
                 switch (direction) {
                     case 'up':
                         faction.velocityY -= moveSpeed;
@@ -66,9 +80,11 @@ export const BlobManager = {
             }
         }
     },
+
     calculateMoveSpeed: function(radius) {
         return GAME_CONSTANTS.BASE_MOVE_SPEED * (1 - (radius / GAME_CONSTANTS.MAX_BLOB_RADIUS) * 0.8);
     },
+
     applyFriction: function() {
         for (let key in GAME_STATE.factions) {
             let faction = GAME_STATE.factions[key];
@@ -79,6 +95,7 @@ export const BlobManager = {
             this.updateFactionText(faction);
         }
     },
+
     keepBlobsInBounds: function() {
         for (let key in GAME_STATE.factions) {
             let faction = GAME_STATE.factions[key];
@@ -104,6 +121,7 @@ export const BlobManager = {
             this.updateFactionText(faction);
         }
     },
+
     checkBlobCollisions: function() {
         const factionNames = Object.keys(GAME_STATE.factions);
         const factionsToDestroy = new Set();
@@ -139,11 +157,88 @@ export const BlobManager = {
             FactionManager.destroyFaction(factionName);
         });
     },
+
     updateFactionText: function(faction) {
         let blob = faction.blob;
-        faction.nameText.setPosition(blob.x, blob.y - 10);
-        faction.officersText.setPosition(blob.x, blob.y + 10);
-        faction.nameText.setScale(blob.scale);
-        faction.officersText.setScale(blob.scale * 0.75);
+        
+        // Update faction name text
+        if (faction.nameText && faction.name) {
+            faction.nameText.setPosition(blob.x, blob.y - blob.radius - 10);
+            faction.nameText.setText(faction.name.toUpperCase());
+            faction.nameText.setStyle({
+                font: 'bold 16px Arial',
+                fill: '#ffffff',
+                align: 'center',
+                stroke: '#000000',
+                strokeThickness: 3
+            });
+            faction.nameText.setScale(blob.scale);
+        }
+
+        // Update officers text
+        if (faction.officersText && faction.officers) {
+            faction.officersText.setPosition(blob.x, blob.y);
+            faction.officersText.setText(faction.officers.join('\n'));
+            faction.officersText.setStyle({
+                font: '12px Arial',
+                fill: '#ffffff',
+                align: 'center',
+                stroke: '#000000',
+                strokeThickness: 2
+            });
+            faction.officersText.setScale(blob.scale * 0.75);
+            
+            // Center the officers text
+            faction.officersText.setOrigin(0.5, 0.5);
+        }
+    },
+
+    addDirection: function(factionName, direction) {
+        if (!this.recentDirections[factionName]) {
+            this.recentDirections[factionName] = [];
+        }
+        this.recentDirections[factionName].push(direction);
+        if (this.recentDirections[factionName].length > GAME_CONSTANTS.CONSENSUS_DIRECTIONS_REQUIRED) {
+            this.recentDirections[factionName].shift();
+        }
+    },
+
+    checkConsensus: function(factionName) {
+        if (this.recentDirections[factionName] && 
+            this.recentDirections[factionName].length === GAME_CONSTANTS.CONSENSUS_DIRECTIONS_REQUIRED) {
+            return this.recentDirections[factionName].every(dir => dir === this.recentDirections[factionName][0]);
+        }
+        return false;
+    },
+
+    applySpeedBoost: function(faction, direction) {
+        const originalColor = faction.blob.fillColor;
+        faction.blob.setFillStyle(0xffff00); // Set to yellow
+        
+        if (this.boostTimers[faction.name]) {
+            clearTimeout(this.boostTimers[faction.name]);
+        }
+    
+        this.boostTimers[faction.name] = setTimeout(() => {
+            faction.blob.setFillStyle(originalColor); // Reset to original color
+            this.recentDirections[faction.name] = [];
+        }, GAME_CONSTANTS.SPEED_BOOST_DURATION);
+    
+        // Apply an extra boost in the consensus direction
+        let boostSpeed = this.calculateMoveSpeed(faction.blob.radius) * GAME_CONSTANTS.SPEED_BOOST_FACTOR;
+        switch (direction) {
+            case 'up':
+                faction.velocityY -= boostSpeed;
+                break;
+            case 'down':
+                faction.velocityY += boostSpeed;
+                break;
+            case 'left':
+                faction.velocityX -= boostSpeed;
+                break;
+            case 'right':
+                faction.velocityX += boostSpeed;
+                break;
+        }
     }
 };

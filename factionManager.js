@@ -36,26 +36,31 @@ export const FactionManager = {
         }
 
         let color = Phaser.Display.Color.RandomRGB();
-        let x = Phaser.Math.Between(100, GameSetup.config.width - 100);
-        let y = Phaser.Math.Between(100, GameSetup.config.height - 100);
+        let x = Phaser.Math.Between(100, GAME_STATE.gameScene.scale.width - 100);
+        let y = Phaser.Math.Between(100, GAME_STATE.gameScene.scale.height - 100);
 
         let newBlob = GAME_STATE.gameScene.add.circle(x, y, 50, color.color);
         newBlob.setInteractive();
         newBlob.radius = 50;
 
-        let nameText = GAME_STATE.gameScene.add.text(x, y - 10, factionName, {
-            font: '16px Arial',
+        let nameText = GAME_STATE.gameScene.add.text(x, y - 10, factionName.toUpperCase(), {
+            font: 'bold 16px Arial',
             fill: '#ffffff',
-            align: 'center'
+            align: 'center',
+            stroke: '#000000',
+            strokeThickness: 3
         }).setOrigin(0.5);
 
         let officersText = GAME_STATE.gameScene.add.text(x, y + 10, '', {
             font: '12px Arial',
             fill: '#ffffff',
-            align: 'center'
+            align: 'center',
+            stroke: '#000000',
+            strokeThickness: 2
         }).setOrigin(0.5);
 
         GAME_STATE.factions[factionName] = {
+            name: factionName,
             color: color.color,
             blob: newBlob,
             members: Array.from(GAME_STATE.factionRequests[factionName]),
@@ -88,7 +93,9 @@ export const FactionManager = {
             {
                 font: '16px Arial',
                 fill: '#ffffff',
-                align: 'center'
+                align: 'center',
+                stroke: '#000000',
+                strokeThickness: 3
             }
         ).setOrigin(0.5);
 

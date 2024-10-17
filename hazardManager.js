@@ -13,7 +13,7 @@ export const HazardManager = {
 
     spawnHazardousPellet: function() {
         let x = Phaser.Math.Between(10, GAME_STATE.gameScene.scale.width - 10);
-        let y = Phaser.Math.Between(10, GAME_STATE.gameScene.sys.game.config.height - 10);
+        let y = Phaser.Math.Between(10, GAME_STATE.gameScene.scale.height - 10);
         let pellet = GAME_STATE.gameScene.add.circle(x, y, 7, 0xFF0000);
         this.hazardousPellets.push(pellet);
     },
