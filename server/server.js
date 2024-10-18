@@ -1,7 +1,6 @@
 import 'dotenv/config'
 import { commands } from '../shared.js'
 import tmi from 'tmi.js'
-import { getEmotes } from './emotes.js'
 import { WebSocketServer } from 'ws'
 
 // Twitch Chat Client Setup
@@ -13,15 +12,7 @@ const twitchClient = new tmi.Client({
   channels: [process.env.TWITCH_CHANNEL]
 })
 
-Promise.all([getEmotes(), twitchClient.connect()])
-  .then((result) => {
-    console.log('Initialized.')
-    console.table(result[0])
-  })
-  .catch((err) => {
-    console.error('Initialization failed:', err)
-  })
-
+twitchClient.connect()
 // WebSocket Server Setup
 const wss = new WebSocketServer({ port: 8080 })
 

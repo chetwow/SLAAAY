@@ -1,4 +1,4 @@
-import { channelId, emotes } from '../shared.js'
+import { channelId, emotes } from './shared.js'
 
 const url = 'https://7tv.io/v3/users/twitch/'
 

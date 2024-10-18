@@ -1,11 +1,9 @@
 import { GAME_STATE } from './gameState.js'
 import { GAME_CONSTANTS } from './constants.js'
-import { GameSetup } from './gameSetup.js'
 
 export const FactionManager = {
   joinFaction: function (factionName, username) {
     const foundersRequired = GAME_CONSTANTS.DEBUG_MODE ? 1 : GAME_CONSTANTS.FOUNDERS_REQUIRED
-    console.log(foundersRequired)
     factionName = this.sanitizeFactionName(factionName)
 
     if (GAME_STATE.userFactions[username]) {

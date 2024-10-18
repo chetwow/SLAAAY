@@ -4,7 +4,7 @@ import { WebSocketHandler } from './webSocketHandler.js'
 import { PelletManager } from './pelletManager.js'
 import { HazardManager } from './hazardManager.js'
 import { BlobManager } from './blobManager.js'
-import { emotes } from './shared.js'
+import { getEmotes } from './emotes.js'
 
 export const GameSetup = {
   config: {
@@ -14,8 +14,13 @@ export const GameSetup = {
     backgroundColor: '#2C2F33',
     parent: 'game-container',
     scene: {
-      preload: function () {
-        emotes.entries().forEach(([name, url]) => {
+      preload: async function () {
+        const emotes = await getEmotes()
+        this.load.setBaseURL('https://cdn.7tv.app/emote')
+        console.log('preload')
+        emotes.entries().forEach(([name, emote]) => {
+          const url = emote.id + '/4x_static.webp'
+          console.log(url)
           this.load.image(name, url)
         })
       },
