@@ -12,7 +12,7 @@ export const ChatHandler = {
     if (command == '!join' && value) {
       FactionManager.joinFaction(value, username)
     } else if (commands.includes(command)) {
-      BlobManager.moveBlob(username, command)
+      BlobManager.moveBlob(username, command.slice(1))
     }
     this.updateChatDisplay(chatData)
   },
